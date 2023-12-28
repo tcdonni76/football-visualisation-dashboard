@@ -12,18 +12,27 @@ df = pd.read_csv('test.csv')
 
 app = Dash(__name__, title='Football visualisations dashboard', external_stylesheets=[dbc.themes.CYBORG])
 
-app.layout = html.Div(children=[
+topbar = html.Div(
+    children=[
+        html.Button("Menu", id='menu-button', n_clicks=1),
+        html.Div(id='links-container')
+    ]
+)
 
-                          # Scatter graph
-                          dcc.Graph(id='scatter-plot'),
+content = html.Div(children=[
 
-                          # The following are the different options to filter the scatter graph
+    html.Div([
+                          html.Div(style={'height': '40px'}),   
+    # The following are the different options to filter the scatter graph#
+                          html.H6("Highlight a player...", style={'color': '#ffffff'}),
                           dcc.Dropdown(
                                       id='player-highlight',
                                       options=[{'label': player['player'] + ', ' + player['team'], 'value': player['player']} for index, player in df.iterrows()],
                                       placeholder='Highlight a player',
                                       multi=True
                                   ),
+
+                        html.Div(style={'height': '30px'}),                    
 
                         # Change what the scatters are coloured with
                         html.H6("Colour option", style={'color': '#ffffff'}),
@@ -36,8 +45,10 @@ app.layout = html.Div(children=[
                                       multi=False,
                                   ),
 
-                          html.H6("X and Y filters", style={'color': '#ffffff'}),
+                          html.Div(style={'height': '30px'}),
+
                           html.Div([
+                              html.H6("X and Y filters", style={'color': '#ffffff'}),
                               html.Div([
                                   dcc.Dropdown(
                                       id='x-axis-dropdown',
@@ -45,7 +56,7 @@ app.layout = html.Div(children=[
                                       value='xg_assist_per90',  # Default selected value
                                       multi=False,
                                   ),
-                              ], style={'width': '30%', 'display': 'inline-block'}),
+                              ]),
 
                               html.Div([
                                   dcc.Dropdown(
@@ -54,13 +65,17 @@ app.layout = html.Div(children=[
                                       value='xg_per90',  # Default selected value
                                       multi=False,
                                   ),
-                              ], style={'width': '30%', 'display': 'inline-block'}),
+                              ] ),
+
+                            html.Div(style={'height': '30px'}),
 
                               html.Div([
                                     html.H6("Minimum threshold of 90s", style={'color': '#ffffff'}),
                                   dcc.Input(id='90s_input', type='text', value=str(int(max(df['minutes_90s']) * 0.75)),
                                             placeholder='Minimum number of 90s', pattern="[0-9]*"),
-                              ], style={'width': '30%', 'display': 'inline-block'}),
+                              ]),
+
+                            html.Div(style={'height': '30px'}),
 
                               html.Div([
                                   html.H6("Select positions", style={'color': '#ffffff'}),
@@ -75,6 +90,7 @@ app.layout = html.Div(children=[
                                       value=['DF','MF','FW'],
                                       style={'color': '#ffffff'}    
                                   ),
+                                  html.H6("Select leagues", style={'color': '#ffffff'}),
                                 dcc.Dropdown(
                                       id='league_filter',
                                       options=[
@@ -87,10 +103,37 @@ app.layout = html.Div(children=[
                                       multi=True,
                                       value=['eng Premier League','fr Ligue 1','it Serie A', 'de Bundesliga', 'es La Liga'],
                                   ),
-                              ], style={'width': '30%', 'display': 'inline-block'}),
+                              ]),
 
                       ]) 
+], style={'width': '20%', 'float': 'left'}) ,
+
+html.Div([
+                              # Scatter graph
+                          dcc.Graph(id='scatter-plot')
+], style={'width': '80%', 'float': 'right'})
+
     ])
+
+
+
+
+app.layout = html.Div([topbar, content])
+
+@app.callback(
+        Output('links-container', 'children'),
+        [Input('menu-button', 'n_clicks')]
+)
+
+def update_page(n_clicks):
+    if n_clicks % 2 == 0:
+        links = [
+            dcc.Link('Go to Page 1', href='/page-1'),
+            dcc.Link('Go to Page 2', href='/page-2')
+        ]
+        return links
+    else:
+        return []
 
 
 @app.callback(
@@ -102,6 +145,7 @@ app.layout = html.Div(children=[
      Input('colour_option', 'value'),
      Input('league_filter', 'value'),
      Input('player-highlight', 'value')])
+
 def update_scatter_plot(x_axis_variable, y_axis_variable, selected_positions, ninties_threshold, colour_option, league_filter, player_highlight):
     if not ninties_threshold or not re.match("^[0-9]*$", ninties_threshold):
         return dash.no_update
