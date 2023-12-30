@@ -1,0 +1,14 @@
+.options-button {
+    background-color: #3498db; /* Blue color for the button */
+    color: #ecf0f1; /* Light text color for the button */
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.options-button:hover {
+    background-color: #2980b9; /* Darker blue color on hover */
+}
